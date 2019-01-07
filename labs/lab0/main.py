@@ -4,11 +4,12 @@ sys.path.append('..')  # noqa
 
 import numpy
 import wx
-from OpenGL import GL, GLUT
+from OpenGL import GL
 from wx import glcanvas
 
 from helpers import refresh2d
-from lab0.utils import draw_grid, draw_point, get_object
+from lab0.grid import Grid
+from lab0.utils import draw_point, get_object
 
 # canvas constants
 WIDTH, HEIGHT = 900, 600
@@ -29,6 +30,7 @@ class OpenGLCanvas(glcanvas.GLCanvas):
         self.parent = parent
 
         self.is_gl_initialized = False
+        self.grid = Grid(ORIGIN, WIDTH - PADDING * 2, HEIGHT - PADDING * 2, 20)
         self.object = get_object(ORIGIN)
         self.rot_point = ORIGIN + (0, 0)
 
@@ -48,7 +50,7 @@ class OpenGLCanvas(glcanvas.GLCanvas):
         GL.glLoadIdentity()  # reset position
         refresh2d(WIDTH, HEIGHT)  # set mode to 2d
 
-        draw_grid(ORIGIN, WIDTH - PADDING * 2, HEIGHT - PADDING * 2, 20)
+        self.grid.draw()
         draw_point(self.rot_point)
         self.object.draw()
 
@@ -84,11 +86,25 @@ class MyPanel(wx.Panel):
         self.rot_angle_input = wx.SpinCtrl(self, -1, pos=(WIDTH + 60, 205), size=(60, 20), min=-360, max=360)
         self.rot_apply_btn = wx.Button(self, -1, "Apply", pos=(WIDTH + 20, 235), size=(100, 30))
 
-        self.reset_btn = wx.Button(self, -1, "Reset", pos=(WIDTH + 20, 280), size=(100, 30))
+        wx.StaticText(self, -1, label="Affine transform.", pos=(WIDTH + 20, 285))
+        wx.StaticText(self, -1, label="rx", pos=(WIDTH + 20, 307))
+        self.affine_rxx_input = wx.SpinCtrlDouble(self, -1, pos=(WIDTH + 60, 305), size=(60, 20),
+                                                  min=-1.5, max=1.5, initial=1, inc=0.1)
+        self.affine_rxy_input = wx.SpinCtrlDouble(self, -1, pos=(WIDTH + 130, 305), size=(60, 20),
+                                                  min=-1.5, max=1.5, inc=0.1)
+        wx.StaticText(self, -1, label="ry", pos=(WIDTH + 20, 332))
+        self.affine_ryx_input = wx.SpinCtrlDouble(self, -1, pos=(WIDTH + 60, 330), size=(60, 20),
+                                                  min=-1.5, max=1.5, inc=0.1)
+        self.affine_ryy_input = wx.SpinCtrlDouble(self, -1, pos=(WIDTH + 130, 330), size=(60, 20),
+                                                  min=-1.5, max=1.5, initial=1, inc=0.1)
+        self.affine_apply_btn = wx.Button(self, -1, "Apply", pos=(WIDTH + 20, 360), size=(100, 30))
+
+        self.reset_btn = wx.Button(self, -1, "Reset", pos=(WIDTH + 20, 410), size=(100, 30))
 
         self.Bind(wx.EVT_BUTTON, self.on_shift, source=self.shift_apply_btn)
         self.Bind(wx.EVT_BUTTON, self.on_rotate, source=self.rot_apply_btn)
         self.Bind(wx.EVT_BUTTON, self.on_reset, source=self.reset_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_affinate, source=self.affine_apply_btn)
         self.Bind(wx.EVT_KEY_UP, self.on_key_press)
         self.canvas.Bind(wx.EVT_KEY_UP, self.on_key_press)
 
@@ -108,12 +124,17 @@ class MyPanel(wx.Panel):
 
     def on_reset(self, event):
         self.canvas.object = get_object(ORIGIN)
+        self.canvas.grid = Grid(ORIGIN, WIDTH - PADDING * 2, HEIGHT - PADDING * 2, 20)
         self.canvas.rot_point = ORIGIN + (0, 0)
         self.shift_x_input.SetValue(0)
         self.shift_y_input.SetValue(0)
         self.rot_x_input.SetValue(0)
         self.rot_y_input.SetValue(0)
         self.rot_angle_input.SetValue(0)
+        self.affine_rxx_input.SetValue(1)
+        self.affine_rxy_input.SetValue(0)
+        self.affine_ryx_input.SetValue(0)
+        self.affine_ryy_input.SetValue(1)
 
     def on_key_press(self, event: wx.KeyEvent):
         key_code = event.KeyCode
@@ -137,10 +158,22 @@ class MyPanel(wx.Panel):
             self.canvas.object.shift(0, -SHIFT_STEP)
             self.Refresh()
 
+    def on_affinate(self, event):
+        direction_x = numpy.array((
+            self.affine_rxx_input.GetValue(),
+            self.affine_rxy_input.GetValue()
+        ))
+        direction_y = numpy.array((
+            self.affine_ryx_input.GetValue(),
+            self.affine_ryy_input.GetValue()
+        ))
+        self.canvas.grid.affinate(direction_x, direction_y)
+        self.canvas.object.affinate(direction_x, direction_y, ORIGIN)
+
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        self.size = (WIDTH + 140, HEIGHT + 50)
+        self.size = (WIDTH + 200, HEIGHT + 50)
         super().__init__(None, title='pannkotsky', size=self.size)
         self.SetMinSize(self.size)
         self.panel = MyPanel(self)

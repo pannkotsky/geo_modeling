@@ -30,10 +30,21 @@ def draw_text(origin: array, text):
         GLUT.glutBitmapCharacter(GLUT.GLUT_BITMAP_HELVETICA_10, ctypes.c_int(ord(c)))
 
 
-def rotate_point(origin: array, rot_point: array, rot_angle: int) -> array:
+def rotate_point(point: array, rot_point: array, rot_angle: int) -> array:
     a = radians(rot_angle)
-    x, y = origin - rot_point
-    return array([
+    x, y = point - rot_point
+    return array((
         x * cos(a) - y * sin(a),
         x * sin(a) + y * cos(a)
-    ]) + rot_point
+    )) + rot_point
+
+
+def affinate_point(point: array, direction_x: array, direction_y: array, origin: array) -> array:
+    x, y = point - origin
+    xx, xy = direction_x
+    yx, yy = direction_y
+    x0, y0 = 0, 0
+    return array((
+        x0 + (xx - x0) * x + (xy - x0) * y,
+        y0 + (yx - y0) * x + (yy - y0) * y
+    )) + origin

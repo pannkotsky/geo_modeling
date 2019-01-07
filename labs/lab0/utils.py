@@ -1,56 +1,7 @@
 from numpy import array
-from OpenGL import GL
 
-from helpers import draw_line, draw_text
+from helpers import draw_line
 from lab0.polygon import Polygon
-
-
-def draw_grid(origin: array, width: int, height: int, division: int):
-    x = origin[0]
-    y = origin[1]
-
-    half_width = width // 2
-    half_height = height // 2
-
-    GL.glColor3f(0.25, 0.25, 0.25)
-
-    # x axis
-    draw_line((x - half_width, y), (x + half_width, y))
-    # y axis
-    draw_line((x, y - half_height), (x, y + half_height))
-
-    GL.glColor3f(0.75, 0.75, 0.75)
-
-    # horizontal grid
-    while y <= origin[1] + half_height - division:
-        y += division
-        draw_line((x - half_width, y), (x + half_width, y))
-
-    y = origin[1]
-    while y >= origin[1] - half_height + division:
-        y -= division
-        draw_line((x - half_width, y), (x + half_width, y))
-
-    y = origin[1]
-    # vertical grid
-    while x <= origin[0] + half_width - division:
-        x += division
-        draw_line((x, y - half_height), (x, y + half_height))
-
-    x = origin[0]
-    while x >= origin[0] - half_width + division:
-        x -= division
-        draw_line((x, y - half_height), (x, y + half_height))
-
-    GL.glColor3f(0.25, 0.25, 0.25)
-    GL.glLineWidth(2)
-    draw_line(origin + (20, 5), origin + (20, -5))
-    GL.glLineWidth(1)
-
-    draw_text(origin + (2, -10), "0")
-    draw_text(origin + (22, -10), "20")
-    draw_text(origin + (half_width + 2, -10), "X")
-    draw_text(origin + (2, half_height - 10), "Y")
 
 
 def draw_point(point: array):

@@ -3,7 +3,7 @@ from typing import Tuple, List
 from numpy import array
 from OpenGL import GL
 
-from helpers import draw_line, rotate_point
+from helpers import affinate_point, draw_line, rotate_point
 
 Side = Tuple[int, int]
 Color = Tuple[int, int, int]
@@ -34,3 +34,7 @@ class Polygon:
     def rotate(self, rot_point: array, rot_angle: int):
         for i in range(len(self.edges)):
             self.edges[i] = rotate_point(self.edges[i], rot_point, rot_angle)
+
+    def affinate(self, direction_x: array, direction_y: array, origin: array):
+        for i in range(len(self.edges)):
+            self.edges[i] = affinate_point(self.edges[i], direction_x, direction_y, origin)
