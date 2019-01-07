@@ -89,9 +89,10 @@ class MyPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.on_shift, source=self.shift_apply_btn)
         self.Bind(wx.EVT_BUTTON, self.on_rotate, source=self.rot_apply_btn)
         self.Bind(wx.EVT_BUTTON, self.on_reset, source=self.reset_btn)
-        self.Bind(wx.EVT_PAINT, self.canvas.on_paint)
         self.Bind(wx.EVT_KEY_UP, self.on_key_press)
         self.canvas.Bind(wx.EVT_KEY_UP, self.on_key_press)
+
+        self.Bind(wx.EVT_PAINT, self.canvas.on_paint)
 
     def on_shift(self, event):
         self.canvas.object.shift(self.shift_x_input.GetValue(), self.shift_y_input.GetValue())
