@@ -3,7 +3,8 @@ from typing import Tuple, List
 from numpy import array
 from OpenGL import GL
 
-from helpers import affinate_point, draw_line, project_point, rotate_point
+from helpers import draw_line, rotate_point
+from lab0.figure import Figure
 
 Side = Tuple[int, int]
 Color = Tuple[int, int, int]
@@ -11,14 +12,16 @@ Color = Tuple[int, int, int]
 BLACK = (0, 0, 0)
 
 
-class Polygon:
-    def __init__(self, edges: List[array], sides: List[Side], line_width: int = 2, color: Color = BLACK):
+class Polygon(Figure):
+    def __init__(self, edges: List[array], sides: List[Side], line_width: int = 2,
+                 color: Color = BLACK):
+        super().__init__()
         self.edges = edges
         self.sides = sides
         self.line_width = line_width
         self.color = color
 
-    def draw(self):
+    def _draw(self):
         GL.glLineWidth(self.line_width)
         GL.glColor3f(*self.color)
 
@@ -35,12 +38,6 @@ class Polygon:
         for i in range(len(self.edges)):
             self.edges[i] = rotate_point(self.edges[i], rot_point, rot_angle)
 
-    def affinate(self, direction_x: array, direction_y: array, origin: array):
+    def _transform(self, transform_fn):
         for i in range(len(self.edges)):
-            self.edges[i] = affinate_point(self.edges[i], direction_x, direction_y, origin)
-
-    def project(self, x_end: array, x_weight: float, y_end: array, y_weight: float,
-                origin_weight: float, origin: array):
-        for i in range(len(self.edges)):
-            self.edges[i] = project_point(self.edges[i], x_end, x_weight, y_end, y_weight,
-                                          origin_weight, origin)
+            self.edges[i] = transform_fn(self.edges[i])

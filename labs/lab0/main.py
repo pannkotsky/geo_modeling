@@ -9,6 +9,7 @@ from wx import glcanvas
 
 from helpers import refresh2d
 from lab0.grid import Grid
+from lab0.point import Point
 from lab0.utils import draw_point, get_object
 
 # canvas constants
@@ -34,12 +35,10 @@ class OpenGLCanvas(glcanvas.GLCanvas):
 
         self.context = glcanvas.GLContext(self)
 
-        self.Bind(wx.EVT_LEFT_UP, self.on_mouse_click)
-
     def init_drawing(self):
         self.grid = Grid(ORIGIN, WIDTH - PADDING * 2, HEIGHT - PADDING * 2, 20)
-        self.object = get_object(ORIGIN + (WIDTH // 2, HEIGHT // 2))
-        self.rot_point = ORIGIN + (WIDTH // 2, HEIGHT // 2)
+        self.object = get_object(ORIGIN + (WIDTH // 4, HEIGHT // 4))
+        self.rot_point = Point(ORIGIN + (WIDTH // 4, HEIGHT // 4))
 
     def on_paint(self, event: wx.Event):
         self.SetCurrent(self.context)
@@ -54,15 +53,10 @@ class OpenGLCanvas(glcanvas.GLCanvas):
         refresh2d(WIDTH, HEIGHT)  # set mode to 2d
 
         self.grid.draw()
-        draw_point(self.rot_point)
+        self.rot_point.draw()
         self.object.draw()
 
         self.SwapBuffers()
-
-    def on_mouse_click(self, event: wx.MouseEvent):
-        self.rot_point = numpy.array((event.x, HEIGHT - event.y))
-        self.parent.rot_x_input.SetValue(event.x - ORIGIN[0])
-        self.parent.rot_y_input.SetValue(HEIGHT - event.y - ORIGIN[1])
 
     def init_gl(self):
         GL.glClearColor(1.0, 1.0, 1.0, 1.0)
@@ -147,7 +141,7 @@ class MyPanel(wx.Panel):
         )
         rot_angle = self.rot_angle_input.GetValue()
         self.canvas.object.rotate(rot_point, rot_angle)
-        self.canvas.rot_point = rot_point
+        self.canvas.rot_point = Point(rot_point)
 
     def on_affinate(self, event):
         direction_x = numpy.array((
@@ -158,8 +152,9 @@ class MyPanel(wx.Panel):
             self.affine_ryx_input.GetValue(),
             self.affine_ryy_input.GetValue()
         ))
-        self.canvas.grid.affinate(direction_x, direction_y)
-        self.canvas.object.affinate(direction_x, direction_y, ORIGIN)
+
+        for item in (self.canvas.grid, self.canvas.object, self.canvas.rot_point):
+            item.affinate(direction_x, direction_y, ORIGIN)
 
     def on_project(self, event):
         x_end = numpy.array((
@@ -173,8 +168,9 @@ class MyPanel(wx.Panel):
         ))
         y_weight = self.proj_wy_input.GetValue()
         origin_weight = self.proj_w0_input.GetValue()
-        self.canvas.grid.project(x_end, x_weight, y_end, y_weight, origin_weight, ORIGIN)
-        self.canvas.object.project(x_end, x_weight, y_end, y_weight, origin_weight, ORIGIN)
+
+        for item in (self.canvas.grid, self.canvas.object, self.canvas.rot_point):
+            item.project(x_end, x_weight, y_end, y_weight, origin_weight, ORIGIN)
 
     def on_reset(self, event):
         self.canvas.init_drawing()
@@ -193,13 +189,13 @@ class MyPanel(wx.Panel):
         ctrl_down = event.ControlDown()
         if key_code == wx.WXK_LEFT:
             if ctrl_down:
-                self.canvas.object.rotate(self.canvas.rot_point, ROTATE_STEP)
+                self.canvas.object.rotate(self.canvas.rot_point.point, ROTATE_STEP)
             else:
                 self.canvas.object.shift(-SHIFT_STEP, 0)
             self.Refresh()
         elif key_code == wx.WXK_RIGHT:
             if ctrl_down:
-                self.canvas.object.rotate(self.canvas.rot_point, -ROTATE_STEP)
+                self.canvas.object.rotate(self.canvas.rot_point.point, -ROTATE_STEP)
             else:
                 self.canvas.object.shift(SHIFT_STEP, 0)
             self.Refresh()
