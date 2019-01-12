@@ -41,10 +41,22 @@ def rotate_point(point: array, rot_point: array, rot_angle: int) -> array:
 
 def affinate_point(point: array, direction_x: array, direction_y: array, origin: array) -> array:
     x, y = point - origin
-    xx, xy = direction_x
-    yx, yy = direction_y
+    xx, yx = direction_x
+    xy, yy = direction_y
     x0, y0 = 0, 0
     return array((
         x0 + (xx - x0) * x + (xy - x0) * y,
         y0 + (yx - y0) * x + (yy - y0) * y
+    )) + origin
+
+
+def project_point(point: array, x_end: array, x_weight: float, y_end: array, y_weight: float,
+                  origin_weight: float, origin: array) -> array:
+    x, y = point - origin
+    xx, yx = x_end
+    xy, yy = y_end
+    denom = origin_weight + x_weight * x + y_weight * y or 1
+    return array((
+        (xx * x_weight * x + xy * y_weight * y) / denom,
+        (yx * x_weight * x + yy * y_weight * y) / denom
     )) + origin

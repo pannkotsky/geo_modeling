@@ -1,9 +1,10 @@
+from copy import deepcopy
 from itertools import chain
 
 from numpy import array
 from OpenGL import GL
 
-from helpers import affinate_point, draw_line, draw_text
+from helpers import affinate_point, draw_line, draw_text, project_point
 
 
 class Grid:
@@ -11,60 +12,39 @@ class Grid:
         self.origin = origin
 
         x, y = origin
-        half_width = width // 2
-        half_height = height // 2
 
         self.x_axis = [
-            array((x - half_width, y)),
-            array((x + half_width, y))
+            origin,
+            array((x + width, y))
         ]
         self.y_axis = [
-            array((x, y - half_height)),
-            array((x, y + half_height))
+            origin,
+            array((x, y + height))
         ]
 
         self.horizontal_grid = []
-        while y <= origin[1] + half_height - division:
+        while y <= origin[1] + height - division:
             y += division
             self.horizontal_grid.append(
                 [
-                    array((x - half_width, y)),
-                    array((x + half_width, y))
-                ]
-            )
-
-        y = origin[1]
-        while y >= origin[1] - half_height + division:
-            y -= division
-            self.horizontal_grid.append(
-                [
-                    array((x - half_width, y)),
-                    array((x + half_width, y))
+                    array((x, y)),
+                    array((x + width, y))
                 ]
             )
 
         y = origin[1]
         self.vertical_grid = []
-        while x <= origin[0] + half_width - division:
+        while x <= origin[0] + width - division:
             x += division
             self.vertical_grid.append(
                 [
-                    (x, y - half_height),
-                    (x, y + half_height)
-                ]
-            )
-
-        x = origin[0]
-        while x >= origin[0] - half_width + division:
-            x -= division
-            self.vertical_grid.append(
-                [
-                    array((x, y - half_height)),
-                    array((x, y + half_height))
+                    array((x, y)),
+                    array((x, y + height))
                 ]
             )
 
         self.mark = self.origin + (division, 0)
+        self.affination = None
 
     def draw(self):
         GL.glColor3f(0.25, 0.25, 0.25)
@@ -91,11 +71,31 @@ class Grid:
         self.y_axis = [affinate_point(p, direction_x, direction_y, origin) for p in self.y_axis]
 
         for i in range(len(self.horizontal_grid)):
-            self.horizontal_grid[i] = [affinate_point(p, direction_x, direction_y, self.origin)
+            self.horizontal_grid[i] = [affinate_point(p, direction_x, direction_y, origin)
                                        for p in self.horizontal_grid[i]]
 
         for i in range(len(self.vertical_grid)):
-            self.vertical_grid[i] = [affinate_point(p, direction_x, direction_y, self.origin)
+            self.vertical_grid[i] = [affinate_point(p, direction_x, direction_y, origin)
                                      for p in self.vertical_grid[i]]
 
         self.mark = affinate_point(self.mark, direction_x, direction_y, origin)
+
+    def project(self, x_end: array, x_weight: float, y_end: array, y_weight: float,
+                origin_weight: float, origin: array):
+        self.x_axis = [project_point(p, x_end, x_weight, y_end, y_weight, origin_weight, origin)
+                       for p in self.x_axis]
+        self.y_axis = [project_point(p, x_end, x_weight, y_end, y_weight, origin_weight, origin)
+                       for p in self.y_axis]
+
+        for i in range(len(self.horizontal_grid)):
+            self.horizontal_grid[i] = [project_point(p, x_end, x_weight, y_end, y_weight,
+                                                     origin_weight, origin)
+                                       for p in self.horizontal_grid[i]]
+
+        for i in range(len(self.vertical_grid)):
+            self.vertical_grid[i] = [project_point(p, x_end, x_weight, y_end, y_weight,
+                                                   origin_weight, origin)
+                                     for p in self.vertical_grid[i]]
+
+        self.mark = project_point(self.mark, x_end, x_weight, y_end, y_weight, origin_weight,
+                                  origin)
