@@ -10,7 +10,7 @@ from wx import glcanvas
 from helpers import refresh2d
 from lab0.grid import Grid
 from lab0.point import Point
-from lab0.utils import draw_point, get_object
+from lab0.utils import get_object
 
 # canvas constants
 WIDTH, HEIGHT = 900, 680
@@ -27,12 +27,9 @@ class OpenGLCanvas(glcanvas.GLCanvas):
                       glcanvas.WX_GL_DOUBLEBUFFER,  # Double Buffered
                       glcanvas.WX_GL_DEPTH_SIZE, 24)  # 24 bit
         super().__init__(parent, -1, attribList=attribList, size=(WIDTH, HEIGHT))
-
         self.parent = parent
-
         self.is_gl_initialized = False
         self.init_drawing()
-
         self.context = glcanvas.GLContext(self)
 
     def init_drawing(self):
@@ -52,11 +49,14 @@ class OpenGLCanvas(glcanvas.GLCanvas):
         GL.glLoadIdentity()  # reset position
         refresh2d(WIDTH, HEIGHT)  # set mode to 2d
 
+        self.draw()
+
+        self.SwapBuffers()
+
+    def draw(self):
         self.grid.draw()
         self.rot_point.draw()
         self.object.draw()
-
-        self.SwapBuffers()
 
     def init_gl(self):
         GL.glClearColor(1.0, 1.0, 1.0, 1.0)
@@ -210,7 +210,7 @@ class MyPanel(wx.Panel):
 class MyFrame(wx.Frame):
     def __init__(self):
         self.size = (WIDTH + 250, HEIGHT)
-        super().__init__(None, title='pannkotsky', size=self.size)
+        super().__init__(None, title='Lab 0', size=self.size)
         self.SetMinSize(self.size)
         self.panel = MyPanel(self)
 
