@@ -3,7 +3,7 @@ from typing import List, Tuple
 from numpy import array
 from OpenGL import GL
 
-from lab1.utils import draw_bezier_curve, transform_point
+from lab1.utils import draw_bezier_curve
 
 Section = Tuple[array, array, array, array]
 PointsList = List[
@@ -34,21 +34,11 @@ class Outline:
 
         GL.glLineWidth(1)
 
-    @classmethod
-    def get_by_points(cls, points: PointsList, helper_points: PointsList):
-        for i in range(len(points)):
-            points[i] = tuple(transform_point(point) for point in points[i])
-
-        for i in range(len(helper_points)):
-            helper_points[i] = tuple(transform_point(point) for point in helper_points[i])
-
+    def intermediate(self, other, total_steps, step):
         sections = []
-        for (p1, p4), (p2, p3) in zip(points, helper_points):
-            sections.append((
-                array(p1),
-                array(p2),
-                array(p3),
-                array(p4),
-            ))
+        portion = step / total_steps
+        for section1, section2 in zip(self.sections, other.sections):
+            intermediate_points = tuple(point1 + (point2 - point1) * portion for point1, point2 in zip(section1, section2))
+            sections.append(intermediate_points)
 
-        return cls(sections)
+        return self.__class__(sections)

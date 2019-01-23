@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import tee
 from typing import Iterable, Tuple
 
@@ -34,8 +35,6 @@ def draw_bezier_curve(a: array, b: array, c: array, d: array):
         draw_line(p0, p1)
 
 
-def transform_point(point: Tuple[int, int]) -> Tuple[int, int]:
-    from lab1.main import HEIGHT, PADDING
-
+def transform_point(point: Tuple[int, int], height: int, shift_x: int, shift_y: int) -> Tuple[int, int]:
     x, y = point
-    return x / 2 + PADDING, HEIGHT - y / 2 + PADDING
+    return x // 2 + shift_x, height - y // 2 + shift_y

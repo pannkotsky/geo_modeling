@@ -1,4 +1,7 @@
+from numpy import array
+
 from lab1.outline import Outline
+from lab1.utils import transform_point
 
 
 def get_kangaroo():
@@ -104,4 +107,19 @@ def get_kangaroo():
         ((94, 1168), (60, 1200)),
     ]
 
-    return Outline.get_by_points(points, helper_points)
+    for i in range(len(points)):
+        points[i] = tuple(transform_point(point, 604, 120, 20) for point in points[i])
+
+    for i in range(len(helper_points)):
+        helper_points[i] = tuple(transform_point(point, 604, 120, 20) for point in helper_points[i])
+
+    sections = []
+    for (p1, p4), (p2, p3) in zip(points, helper_points):
+        sections.append((
+            array(p1),
+            array(p2),
+            array(p3),
+            array(p4),
+        ))
+
+    return Outline(sections)
