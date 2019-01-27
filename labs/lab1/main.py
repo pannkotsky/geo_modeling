@@ -80,6 +80,9 @@ class MyPanel(wx.Panel):
         self.Bind(wx.EVT_TIMER, self.on_back_timer, source=self.back_timer)
         self.Bind(wx.EVT_TIMER, self.on_forward_timer, source=self.forward_timer)
 
+        self.Bind(wx.EVT_KEY_UP, self.on_key_press)
+        self.canvas.Bind(wx.EVT_KEY_UP, self.on_key_press)
+
         self.Bind(wx.EVT_PAINT, self.canvas.on_paint)
 
     def on_full_back(self, event):
@@ -91,11 +94,11 @@ class MyPanel(wx.Panel):
             self.Refresh()
             self.back_timer.StartOnce(INTERVAL)
 
-    def on_back(self, event):
+    def on_back(self, event=None):
         if self.canvas.current_step > 0:
             self.canvas.current_step = max(self.canvas.current_step - 5, 0)
 
-    def on_forward(self, event):
+    def on_forward(self, event=None):
         if self.canvas.current_step < TOTAL_STEPS:
             self.canvas.current_step = min(self.canvas.current_step + 5, TOTAL_STEPS)
 
@@ -107,6 +110,15 @@ class MyPanel(wx.Panel):
             self.canvas.current_step += 1
             self.Refresh()
             self.forward_timer.StartOnce(INTERVAL)
+
+    def on_key_press(self, event: wx.KeyEvent):
+        key_code = event.KeyCode
+        if key_code == wx.WXK_LEFT:
+            self.on_back()
+            self.Refresh()
+        elif key_code == wx.WXK_RIGHT:
+            self.on_forward()
+            self.Refresh()
 
 
 class MyFrame(wx.Frame):
