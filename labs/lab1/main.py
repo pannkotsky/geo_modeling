@@ -93,11 +93,11 @@ class MyPanel(wx.Panel):
 
     def on_back(self, event):
         if self.canvas.current_step > 0:
-            self.canvas.current_step = max(self.canvas.current_step - 10, 0)
+            self.canvas.current_step = max(self.canvas.current_step - 5, 0)
 
     def on_forward(self, event):
         if self.canvas.current_step < TOTAL_STEPS:
-            self.canvas.current_step = min(self.canvas.current_step + 10, TOTAL_STEPS)
+            self.canvas.current_step = min(self.canvas.current_step + 5, TOTAL_STEPS)
 
     def on_full_forward(self, event):
         self.forward_timer.StartOnce(INTERVAL)
